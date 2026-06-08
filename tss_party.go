@@ -11,7 +11,7 @@ import (
 
 type TSSParty struct {
 	Id        int                       `json:"id"`
-	PartyID   tss.PartyID               `json:"party_id"`
+	PartyID   *tss.PartyID              `json:"party_id"`
 	PreParams keygen.LocalPreParams     `json:"pre_params"`
 	KeyShare  keygen.LocalPartySaveData `json:"key_share"`
 }
@@ -25,13 +25,13 @@ func NewTSSParty(id int) (*TSSParty, error) {
 
 	return &TSSParty{
 		Id:      id,
-		PartyID: *partyId,
+		PartyID: partyId,
 	}, nil
 }
 
 func (t TSSParty) Print() {
 	fmt.Printf("ID: %d\n", t.Id)
-	fmt.Printf("PartyID: %s\n", t.PartyID.Id)
+	fmt.Printf("PartyID: %+v\n", *t.PartyID)
 	fmt.Printf("PreParams: %+v\n", t.PreParams)
 	fmt.Printf("KeyShare: %+v\n", t.KeyShare)
 }

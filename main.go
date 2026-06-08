@@ -34,4 +34,12 @@ func main() {
 	fmt.Printf("TSS parties created successfully\n")
 	fmt.Println(strings.Repeat("-", 100))
 	fmt.Printf("\n\n")
+
+	/// STEP 3: Generate Key
+	fmt.Println(strings.Repeat("-", 100))
+	fmt.Println("STEP 3: Generate Key")
+	tss.GenerateKey()
+	fmt.Printf("Key generated successfully\n")
+	fmt.Println(strings.Repeat("-", 100))
+	fmt.Printf("\n\n")
 }
