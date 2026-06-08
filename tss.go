@@ -2,11 +2,6 @@ package main
 
 import "errors"
 
-const (
-	TOTAL_PARTIES = 3
-	THRESHOLD     = 2
-)
-
 type TSS struct {
 	TotalParties int         `json:"total_parties"`
 	Threshold    int         `json:"threshold"`
