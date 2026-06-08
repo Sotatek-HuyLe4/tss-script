@@ -51,7 +51,18 @@ func main() {
 		fmt.Printf("Failed to sign message: %v\n", err)
 		return
 	}
-	fmt.Printf("Message signed successfully: %+v\n", signatureData)
+	fmt.Printf("Message signed successfully\n")
+	fmt.Printf("Signature.R: %+x\n", signatureData.R)
+	fmt.Printf("Signature.S: %+x\n", signatureData.S)
+	// verify signature
+	for _, party := range tss.Parties {
+		isValid, err := VerifySignature("Hello, world!", signatureData, party.KeyShare)
+		if err != nil {
+			fmt.Printf("Failed to verify signature: %v\n", err)
+			return
+		}
+		fmt.Printf("Signature verified successfully for party %d: %t\n", party.Id, isValid)
+	}
 	fmt.Println(strings.Repeat("-", 100))
 	fmt.Printf("\n\n")
 }
