@@ -1,6 +1,9 @@
 package main
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 type TSS struct {
 	TotalParties int         `json:"total_parties"`
@@ -18,4 +21,29 @@ func NewTSS(totalParties, threshold int) (*TSS, error) {
 		Threshold:    threshold,
 		Parties:      make([]*TSSParty, totalParties),
 	}, nil
+}
+
+func (t TSS) Print() {
+	fmt.Printf("Total Parties: %d\n", t.TotalParties)
+	fmt.Printf("Threshold: %d\n", t.Threshold)
+	for _, party := range t.Parties {
+		if party != nil {
+			fmt.Printf("Party %d:\n", party.Id)
+			party.Print()
+			fmt.Printf("\n")
+		}
+	}
+}
+
+func (t *TSS) CreateParties() error {
+	for i := 0; i < t.TotalParties; i++ {
+		party, err := NewTSSParty(i + 1)
+		if err != nil {
+			return err
+		}
+
+		t.Parties[i] = party
+	}
+
+	return nil
 }

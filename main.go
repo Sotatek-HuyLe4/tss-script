@@ -19,8 +19,19 @@ func main() {
 		fmt.Printf("Failed to create TSS instance: %v\n", err)
 		return
 	}
-	fmt.Printf("TSS instance created successfully: %+v\n", tss)
+	fmt.Printf("TSS instance created successfully\n")
 	fmt.Println(strings.Repeat("-", 100))
 	fmt.Printf("\n\n")
 
+	/// STEP 2: Create TSS parties
+	fmt.Println(strings.Repeat("-", 100))
+	fmt.Println("STEP 2: Create TSS parties")
+	err = tss.CreateParties()
+	if err != nil {
+		fmt.Printf("Failed to create TSS parties: %v\n", err)
+		return
+	}
+	fmt.Printf("TSS parties created successfully\n")
+	fmt.Println(strings.Repeat("-", 100))
+	fmt.Printf("\n\n")
 }

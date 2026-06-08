@@ -28,3 +28,10 @@ func NewTSSParty(id int) (*TSSParty, error) {
 		PartyID: *partyId,
 	}, nil
 }
+
+func (t TSSParty) Print() {
+	fmt.Printf("ID: %d\n", t.Id)
+	fmt.Printf("PartyID: %s\n", t.PartyID.Id)
+	fmt.Printf("PreParams: %+v\n", t.PreParams)
+	fmt.Printf("KeyShare: %+v\n", t.KeyShare)
+}
