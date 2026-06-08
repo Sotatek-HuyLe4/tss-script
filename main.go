@@ -42,4 +42,16 @@ func main() {
 	fmt.Printf("Key generated successfully\n")
 	fmt.Println(strings.Repeat("-", 100))
 	fmt.Printf("\n\n")
+
+	/// STEP 4: Sign Message
+	fmt.Println(strings.Repeat("-", 100))
+	fmt.Println("STEP 4: Sign Message")
+	signatureData, err := tss.SignMessage("Hello, world!")
+	if err != nil {
+		fmt.Printf("Failed to sign message: %v\n", err)
+		return
+	}
+	fmt.Printf("Message signed successfully: %+v\n", signatureData)
+	fmt.Println(strings.Repeat("-", 100))
+	fmt.Printf("\n\n")
 }

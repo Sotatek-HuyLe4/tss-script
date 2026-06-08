@@ -6,7 +6,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/bnb-chain/tss-lib/v2/common"
 	"github.com/bnb-chain/tss-lib/v2/ecdsa/keygen"
+	"github.com/bnb-chain/tss-lib/v2/ecdsa/signing"
 	"github.com/bnb-chain/tss-lib/v2/tss"
 )
 
@@ -85,13 +87,8 @@ func (t *TSS) GenerateKey() {
 	}
 
 	// route messages through all local parties
-	var wg sync.WaitGroup
 	for i := 0; i < t.TotalParties; i++ {
-		wg.Add(1)
-
 		go func(idx int) {
-			defer wg.Done()
-
 			for msg := range outChs[idx] {
 				wireBytes, routing, _ := msg.WireBytes()
 
@@ -121,6 +118,79 @@ func (t *TSS) GenerateKey() {
 		party.KeyShare = *<-endChs[i]
 		close(outChs[i])
 	}
+}
+
+func (t *TSS) SignMessage(message string) (*common.SignatureData, error) {
+	// convert message to big int
+	msgBigInt, err := StringToBigInt(message)
+	if err != nil {
+		return nil, err
+	}
+
+	// init threshold
+	threshold := t.Threshold + 1
+
+	sortedPartyIds := make(tss.SortedPartyIDs, 0, threshold)
+	keyShares := make([]keygen.LocalPartySaveData, 0, threshold)
+	for i := 0; i < threshold; i++ {
+		party := t.Parties[i]
+		sortedPartyIds = append(sortedPartyIds, party.PartyID)
+		keyShares = append(keyShares, party.KeyShare)
+	}
+
+	outChs := make([]chan tss.Message, threshold)
+	endChs := make([]chan *common.SignatureData, threshold)
+	localParties := make([]*signing.LocalParty, threshold)
+
+	// init local parties
+	for i, party := range sortedPartyIds {
+		outChs[i] = make(chan tss.Message, threshold*threshold)
+		endChs[i] = make(chan *common.SignatureData, 1)
+
+		ctx := tss.NewPeerContext(sortedPartyIds)
+		params := tss.NewParameters(tss.S256(), ctx, party, t.TotalParties, t.Threshold)
+		localParties[i] = signing.NewLocalParty(msgBigInt, params, keyShares[i], outChs[i], endChs[i]).(*signing.LocalParty)
+	}
+
+	// start local parties
+	for _, localParty := range localParties {
+		go localParty.Start()
+	}
+
+	// route messages through all local parties
+	for i := 0; i < threshold; i++ {
+		go func(idx int) {
+			for msg := range outChs[idx] {
+				wireBytes, routing, _ := msg.WireBytes()
+
+				if routing.IsBroadcast {
+					// broadcast to all parties
+					for j, localParty := range localParties {
+						if j != idx {
+							localParty.UpdateFromBytes(wireBytes, sortedPartyIds[idx], true)
+						}
+					}
+				} else {
+					// route to specific party
+					for _, dest := range routing.To {
+						for j, localParty := range localParties {
+							if sortedPartyIds[j].Id == dest.Id {
+								localParty.UpdateFromBytes(wireBytes, sortedPartyIds[idx], false)
+							}
+						}
+					}
+				}
+			}
+		}(i)
+	}
+
+	// collect signature
+	signatureData := <-endChs[0]
+	for i := 1; i < threshold; i++ {
+		<-endChs[i]
+	}
+
+	return signatureData, nil
 }
 
 func (t *TSS) sortParties() {
