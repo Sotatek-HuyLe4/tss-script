@@ -40,6 +40,9 @@ func main() {
 	fmt.Println("STEP 3: Generate Key")
 	tss.GenerateKey()
 	fmt.Printf("Key generated successfully\n")
+	pubkey := tss.Parties[0].KeyShare.ECDSAPub
+	fmt.Printf("	Public key X = %x\n", pubkey.X())
+	fmt.Printf("	Public key Y = %x\n", pubkey.Y())
 	fmt.Println(strings.Repeat("-", 100))
 	fmt.Printf("\n\n")
 
@@ -52,8 +55,46 @@ func main() {
 		return
 	}
 	fmt.Printf("Message signed successfully\n")
-	fmt.Printf("Signature.R: %+x\n", signatureData.R)
-	fmt.Printf("Signature.S: %+x\n", signatureData.S)
+	fmt.Printf("	Signature.R: %+x\n", signatureData.R)
+	fmt.Printf("	Signature.S: %+x\n", signatureData.S)
+	// verify signature
+	for _, party := range tss.Parties {
+		isValid, err := VerifySignature("Hello, world!", signatureData, party.KeyShare)
+		if err != nil {
+			fmt.Printf("Failed to verify signature: %v\n", err)
+			return
+		}
+		fmt.Printf("Signature verified successfully for party %d: %t\n", party.Id, isValid)
+	}
+	fmt.Println(strings.Repeat("-", 100))
+	fmt.Printf("\n\n")
+
+	/// STEP 5: Re-sharing Key
+	fmt.Println(strings.Repeat("-", 100))
+	fmt.Println("STEP 5: Re-sharing Key")
+	err = tss.ReSharingKey(3, 4)
+	if err != nil {
+		fmt.Printf("Failed to re-share key: %v\n", err)
+		return
+	}
+	fmt.Printf("Key re-shared successfully\n")
+	pubkey = tss.Parties[0].KeyShare.ECDSAPub
+	fmt.Printf("	Public key X = %x\n", pubkey.X())
+	fmt.Printf("	Public key Y = %x\n", pubkey.Y())
+	fmt.Println(strings.Repeat("-", 100))
+	fmt.Printf("\n\n")
+
+	/// STEP 6: Re-sign Message
+	fmt.Println(strings.Repeat("-", 100))
+	fmt.Println("STEP 6: Re-sign Message")
+	signatureData, err = tss.SignMessage("Hello, world!")
+	if err != nil {
+		fmt.Printf("Failed to sign message: %v\n", err)
+		return
+	}
+	fmt.Printf("Message signed successfully\n")
+	fmt.Printf("	Signature.R: %+x\n", signatureData.R)
+	fmt.Printf("	Signature.S: %+x\n", signatureData.S)
 	// verify signature
 	for _, party := range tss.Parties {
 		isValid, err := VerifySignature("Hello, world!", signatureData, party.KeyShare)

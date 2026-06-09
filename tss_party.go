@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/bnb-chain/tss-lib/v2/ecdsa/keygen"
 	"github.com/bnb-chain/tss-lib/v2/tss"
@@ -32,6 +33,17 @@ func NewTSSParty(id int) (*TSSParty, error) {
 func (t TSSParty) Print() {
 	fmt.Printf("ID: %d\n", t.Id)
 	fmt.Printf("PartyID: %+v\n", *t.PartyID)
-	fmt.Printf("PreParams: %+v\n", t.PreParams)
-	fmt.Printf("KeyShare: %+v\n", t.KeyShare)
+	// fmt.Printf("PreParams: %+v\n", t.PreParams)
+	// fmt.Printf("KeyShare: %+v\n", t.KeyShare)
+}
+
+func (t *TSSParty) GeneratePreParams() error {
+	p, err := keygen.GeneratePreParams(2 * time.Minute)
+	if err != nil {
+		return err
+	}
+
+	t.PreParams = *p
+
+	return nil
 }
