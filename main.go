@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/ecdsa"
 	"fmt"
 	"strings"
 )
@@ -41,8 +42,14 @@ func main() {
 	tss.GenerateKey()
 	fmt.Printf("Key generated successfully\n")
 	pubkey := tss.Parties[0].KeyShare.ECDSAPub
+	address := GenerateEvmAddress(ecdsa.PublicKey{
+		Curve: pubkey.Curve(),
+		X:     pubkey.X(),
+		Y:     pubkey.Y(),
+	})
 	fmt.Printf("	Public key X = %x\n", pubkey.X())
 	fmt.Printf("	Public key Y = %x\n", pubkey.Y())
+	fmt.Printf("	EVM address = %s\n", address)
 	fmt.Println(strings.Repeat("-", 100))
 	fmt.Printf("\n\n")
 
@@ -79,8 +86,14 @@ func main() {
 	}
 	fmt.Printf("Key re-shared successfully\n")
 	pubkey = tss.Parties[0].KeyShare.ECDSAPub
+	address = GenerateEvmAddress(ecdsa.PublicKey{
+		Curve: pubkey.Curve(),
+		X:     pubkey.X(),
+		Y:     pubkey.Y(),
+	})
 	fmt.Printf("	Public key X = %x\n", pubkey.X())
 	fmt.Printf("	Public key Y = %x\n", pubkey.Y())
+	fmt.Printf("	EVM address = %s\n", address)
 	fmt.Println(strings.Repeat("-", 100))
 	fmt.Printf("\n\n")
 

@@ -10,6 +10,7 @@ import (
 	"github.com/bnb-chain/tss-lib/v2/ecdsa/keygen"
 	"github.com/bnb-chain/tss-lib/v2/ecdsa/resharing"
 	"github.com/bnb-chain/tss-lib/v2/tss"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 func StringToBigInt(message string) (*big.Int, error) {
@@ -93,10 +94,16 @@ func routeResharingMessage(
 			updateParty(oldCommittee[destP.Index], msg)
 		}
 	}
-	
+
 	if !msg.IsToOldCommittee() || msg.IsToOldAndNewCommittees() {
 		for _, destP := range dest {
 			updateParty(newCommittee[destP.Index], msg)
 		}
 	}
+}
+
+func GenerateEvmAddress(pubkey ecdsa.PublicKey) string {
+	address := crypto.PubkeyToAddress(pubkey)
+
+	return address.Hex()
 }
